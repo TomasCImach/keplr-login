@@ -11,11 +11,13 @@
   "dependencies": {
     "@cosmjs/cosmwasm-stargate": "0.28.10",
     "@cosmjs/stargate": "0.28.10",
+    "@directus/sdk": "^10.1.4",
     "@keplr-wallet/cosmos": "^0.10.5",
     "@keplr-wallet/stores": "^0.10.5",
     "@keplr-wallet/types": "^0.10.5",
     "@noahsaso/cosmodal": "^0.6.4",
     "@walletconnect/client": "^1.7.8",
+    "keccak256": "^1.0.6",
     "next": "12.1.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
