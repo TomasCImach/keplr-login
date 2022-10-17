@@ -142,7 +142,7 @@ const Home: NextPage = () => {
   // }, [address]);
 
   const signUp = useCallback(async () => {
-    if (!address || !signingCosmWasmClient) return
+    if (!address || !signingCosmWasmClient || !password) return
     // setStatus("Loading...")
 
     try {
@@ -160,7 +160,7 @@ const Home: NextPage = () => {
       //   // decodeSignature(signature.signature).signature
       // ) : false
 
-      await fetch(`https://juno-signup-api.herokuapp.com/signUp?publicKey=${address}&pubKeyAsArray=${publicKey?.data}&signature=${decodeSignature(signature).signature}&password=PASSWORDTEST123`)
+      await fetch(`https://juno-signup-api.herokuapp.com/signUp?publicKey=${address}&pubKeyAsArray=${publicKey?.data}&signature=${decodeSignature(signature).signature}&password=${password}`)
         // await fetch(`http://127.0.0.1:8055/register-web3-user/signUp?publicKey=${address}&pubKeyAsArray=${publicKey?.data}&signature=${decodeSignature(signature).signature}&password=PASSWORDTEST123`)
         .then(response => response.json()).then(res => console.log("res", res))
       // console.log("verify", verify)
@@ -171,7 +171,7 @@ const Home: NextPage = () => {
       console.error(err)
       setStatus(`Error: ${err instanceof Error ? err.message : `${err}`}`)
     }
-  }, [address,/* contractAddress,*/ text, signingCosmWasmClient, publicKey])
+  }, [address,/* contractAddress,*/ text, signingCosmWasmClient, publicKey, password])
 
   // const login = useCallback(async () => {
   //   console.log("address", address)
