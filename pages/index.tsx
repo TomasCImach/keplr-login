@@ -22,7 +22,7 @@ const { publicRuntimeConfig } = getConfig();
 const url = "https://e36rwf6z.directus.app/"
 const directus = new Directus(url, {
   auth: {
-    mode: "cookie",
+    mode: "json",
     autoRefresh: true,
   },
 });
