@@ -27,8 +27,8 @@ const directus = new Directus<MyCollections>(url, {
   },
 });
 
-const apiUrl = 'http://localhost:8001/'
-// const apiUrl = 'https://juno-signup-api.herokuapp.com/'
+// const apiUrl = 'http://localhost:8001/'
+const apiUrl = 'https://juno-signup-api.herokuapp.com/'
 
 declare global {
   interface Window extends KeplrWindow { }
