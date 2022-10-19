@@ -20,16 +20,37 @@ import { Directus } from "@directus/sdk";
 const { publicRuntimeConfig } = getConfig();
 // const { url } = publicRuntimeConfig;
 const url = "https://e36rwf6z.directus.app/"
-const directus = new Directus(url, {
+const directus = new Directus<MyCollections>(url, {
   auth: {
     mode: "json",
     autoRefresh: true,
   },
 });
 
+const apiUrl = 'http://localhost:8001/'
+// const apiUrl = 'https://juno-signup-api.herokuapp.com/'
+
 declare global {
   interface Window extends KeplrWindow { }
 }
+
+type Articles = {
+  id: string;
+  title: string;
+}
+
+type DirectusUsers = {
+  email: string;
+  password: string;
+  id: string;
+  signature: string;
+  role: string;
+}
+
+type MyCollections = {
+  articles: Articles;
+  directus_users: DirectusUsers;
+};
 
 const Home: NextPage = () => {
   const { connect, disconnect } = useWalletManager()
@@ -46,27 +67,31 @@ const Home: NextPage = () => {
   } = useWallet()
 
   const [text, setText] = useState("empty")
+  const [textPassword, setTextPassword] = useState("empty")
   const [status, setStatus] = useState("")
   const [articles, setArticles] = useState({})
   const [accessToken, setAccessToken] = useState("")
   const [password, setPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
   const [authenticated, setAuthenticated] = useState(false)
+  const [userId, setUserId] = useState<string>()
 
   useEffect(() => {
-    setText(keccak256((address + "LOOP JUNO")).toString('hex'))
-  }, [address]);
-
-  useEffect(() => {
+    console.log("userId Changed", userId)
     const fetchData = async () => {
+      console.log("fetchData")
+      let isAuthenticated = authenticated
       try {
-        // await directus.auth.static(accessToken);
-        let refresh = await directus.auth
+        await directus.auth
           .refresh()
-          .then(() => {
+          .then((res) => {
+            // console.log(res)
             setAuthenticated(true);
+            isAuthenticated = true
           })
           .catch(() => { });
-        if (!authenticated) {
+        if (!isAuthenticated) {
+          console.log("isAuthenticated", isAuthenticated)
           await authenticate()
         }
         const response = await directus.items("articles").readByQuery({
@@ -79,10 +104,34 @@ const Home: NextPage = () => {
         console.log("fetchData Error: ", e)
       }
     }
+    if (userId) {
+      fetchData().catch(console.error)
+    }
+  }, [userId]);
 
-    fetchData().catch(console.error)
-    // }, [accessToken]);
+  useEffect(() => {
+    const fetchUserId = async () => {
+      let userId = address ? await userExists(address) : undefined
+      console.log("user Id", userId)
+      if (authenticated) {
+        const currentId = (await directus.users.me.read({ fields: ['id'] })).id
+        console.log("currentId", currentId)
+        if (currentId !== userId || !userId) {
+          console.log("logout", currentId, userId)
+          await directus.auth.logout()
+          window.location.reload();
+        }
+      }
+      setUserId(userId)
+    }
+
+    setText(keccak256((address + "LOOP JUNO")).toString('hex'))
+    setTextPassword(keccak256((address + "LOOP JUNO PASSWORD1")).toString('hex'))
+    if (address) {
+      fetchUserId().catch(console.error)
+    }
   }, [address]);
+
 
   const authenticate = async () => {
     try {
@@ -107,39 +156,62 @@ const Home: NextPage = () => {
     }
   }
 
+  const resetPassword = async () => {
+    if (!address || !signingCosmWasmClient || !newPassword) return
+    try {
+      let passwordResetNonce
+      await fetch(`${apiUrl}getPasswordResetNonce?publicKey=${address}`)
+        .then(response => response.json()).then(res => {
+          if (res.passwordResetNonce) {
+            passwordResetNonce = res.passwordResetNonce
+          } else {
+            passwordResetNonce = undefined
+          }
+        })
+
+      let signature
+      if (chainInfo && passwordResetNonce) {
+        let client = await wallet?.getClient(chainInfo)
+        signature = client ? await client.signArbitrary("juno", address, `Please sign transaction. Nonce: ${passwordResetNonce}`) : undefined
+      }
+
+      if (signature) {
+        await fetch(`${apiUrl}resetPassword?publicKey=${address}&pubKeyAsArray=${publicKey?.data}&signature=${signature ? decodeSignature(signature).signature : null}&password=${newPassword}`)
+          .then(response => response.json()).then(res => console.log("res", res))
+        authenticated ? await directus.auth.logout() : null;
+        window.location.reload();
+      }
+    } catch (e) {
+      console.log("resetPassword Error: ", e)
+    }
+  }
+
+  async function userExists(address: string): Promise<string | undefined> {
+    if (!address || !signingCosmWasmClient) return undefined
+    try {
+      let response
+      await fetch(`${apiUrl}userExists?publicKey=${address}`)
+        .then(response => response.json()).then(res => {
+          if (res.id) {
+            console.log("User exists with ID: ", res.id)
+            response = res.id
+          } else {
+            console.log("User does not exists.")
+            response = undefined
+          }
+        })
+      return response
+    } catch (e) {
+      console.log("resetPassword Error: ", e)
+    }
+  }
+
   const logOut = async () => {
     console.log("log out")
-    await directus.auth.logout();
+    authenticated ? await directus.auth.logout() : null;
     disconnect()
     window.location.reload();
   }
-
-  // useEffect(() => {
-  //   const authenticate = async () => {
-  //     try {
-  //       console.log("authenticate please")
-  //       if (!address) {
-  //         window.alert('Connect Wallet');
-  //         return
-  //       }
-  //       const password = window.prompt('Password:');
-  //       const email = address + "@fake.com"
-  //       password ? await directus.auth
-  //         .login({ email, password })
-  //         .then(() => {
-  //           setAuthenticated(true);
-  //         })
-  //         .catch(() => {
-  //           window.alert('Invalid credentials');
-  //         }) : null;
-  //     } catch (e) {
-  //       console.log("authenticate Error: ", e)
-  //     }
-  //   }
-  //   if (!authenticated) {
-  //     authenticate().catch(console.error)
-  //   }
-  // }, [address]);
 
   const signUp = useCallback(async () => {
     if (!address || !signingCosmWasmClient || !password) return
@@ -160,11 +232,8 @@ const Home: NextPage = () => {
       //   // decodeSignature(signature.signature).signature
       // ) : false
 
-      await fetch(`https://juno-signup-api.herokuapp.com/signUp?publicKey=${address}&pubKeyAsArray=${publicKey?.data}&signature=${decodeSignature(signature).signature}&password=${password}`)
-        // await fetch(`http://127.0.0.1:8055/register-web3-user/signUp?publicKey=${address}&pubKeyAsArray=${publicKey?.data}&signature=${decodeSignature(signature).signature}&password=PASSWORDTEST123`)
+      await fetch(`${apiUrl}signUp?publicKey=${address}&pubKeyAsArray=${publicKey?.data}&signature=${signature ? decodeSignature(signature).signature : null}&password=${password}`)
         .then(response => response.json()).then(res => console.log("res", res))
-      // console.log("verify", verify)
-      // setStatus(verify ? "verified" : "not verified")
       window.location.reload();
 
     } catch (err) {
@@ -200,9 +269,6 @@ const Home: NextPage = () => {
         {walletStatus === WalletConnectionStatus.Connected ? (
           <>
             <p>
-              Text: <b>{text}</b>
-            </p>
-            <p>
               Name: <b>{name}</b>
             </p>
             <p>
@@ -229,29 +295,43 @@ const Home: NextPage = () => {
               onChange={(event) => setMsg(event.target.value)}
             /> */}
 
-            <button
-              onClick={signUp}
-              className="px-3 py-2 rounded-md border border-gray bg-gray-200 hover:opacity-70 mt-4"
-            >
-              Sign Up
-            </button>
+            {userId === undefined &&
+              <>
+                <button
+                  onClick={signUp}
+                  className="px-3 py-2 rounded-md border border-gray bg-gray-200 hover:opacity-70 mt-4"
+                >
+                  Sign Up
+                </button>
 
-            {/* <button
-              onClick={login}
-              className="px-3 py-2 rounded-md border border-gray bg-gray-200 hover:opacity-70 mt-4"
-            >
-              Log In
-            </button> */}
+                <input
+                  type="text"
+                  placeholder="Password"
+                  className="px-4 py-2 rounded-md outline"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </>
+            }
 
-            <input
-              type="text"
-              placeholder="Password"
-              className="px-4 py-2 rounded-md outline"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
+            {userId !== undefined &&
+              <>
+                <button
+                  onClick={resetPassword}
+                  className="px-3 py-2 rounded-md border border-gray bg-gray-200 hover:opacity-70 mt-4"
+                >
+                  Reset Password
+                </button>
 
-
+                <input
+                  type="text"
+                  placeholder="New Password"
+                  className="px-4 py-2 rounded-md outline"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                />
+              </>
+            }
 
             {status && (
               <pre className="overflow-scroll text-xs mt-2">{status}</pre>
