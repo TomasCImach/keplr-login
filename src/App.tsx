@@ -1,24 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import {BrowserRouter as Router, Routes, Route, useLocation} from "react-router-dom";
+import logo from "./logo.svg";
+import "./App.scss";
+import Header from "./header";
+import Home from "./pages/home";
+import Error from "./pages/error";
+import Profile from "./pages/profile"
+import Feed from "./pages/feed";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <section className="vbox">
+        <Header />
+        <section>
+          <Router>
+            <Routes>
+              <Route path="/" index element={<Feed />} />
+              <Route path="/feed" index element={<Feed />} />
+              <Route path="/profile" element={<Profile />} />
+              
+              {/* WILD CARD */}
+              <Route path="*" element={<Error />} />
+            </Routes>
+          </Router>
+        </section>
+      </section>
     </div>
   );
 }
