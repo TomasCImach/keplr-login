@@ -13,7 +13,7 @@ export default function Header() {
               data-target=".user"
             >
               <span className="thumb-sm avatar pull-left">
-                <img src="https://place-hold.it/50/F0F8FF/000/fff?fontsize=8" alt="..." />
+                <img src="https://via.placeholder.com/50" alt="..." />
               </span>
               <b className="caret"></b>
             </a>
@@ -22,7 +22,7 @@ export default function Header() {
             <li className="dropdown">
               <a href="#" className="dropdown-toggle" data-toggle="dropdown">
                 <span className="thumb-sm avatar pull-left">
-                  <img src="https://place-hold.it/50/F0F8FF/000/fff?fontsize=8" alt="..." />
+                  <img src="https://via.placeholder.com/50" alt="..." />
                 </span>
                 <b className="caret"></b>
               </a>

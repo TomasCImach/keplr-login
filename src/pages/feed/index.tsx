@@ -1,52 +1,42 @@
+import { useState, useEffect } from "react";
+import * as api from "../../components/directus.api";
+
 export default function Feed() {
-  return (
-    <section id="content">
-      <section className="social_Feed">
-        <div className="user">
-          <div className="user_image">
-            <img
-              src="https://via.placeholder.com/50"
-              className="img-circle"
-            />
+  const [feed, setFeed] = useState<any>();
+
+  useEffect(() => {
+    if (!feed) {
+      api.getFeed().then((data) => setFeed(data));
+    }
+  }, [feed]);
+
+  return feed?.map((item: any) => {
+    console.log(item)
+    return (
+      <section id="content">
+        <section className="social_Feed">
+          <div className="user">
+            <div className="user_image">
+              <img
+                src={`https://loop-markets.directus.app/assets/${item.author.avatar}`}
+                className="img-circle"
+              />
+            </div>
+            <div className="user_detail">
+              <div className="h4">{item.author.first_name}</div>
+              <small className="text-muted m-b">{item.author.title}</small>
+            </div>
           </div>
-          <div className="user_detail">
-            <div className="h4">John Doe</div>
-            <small className="text-muted m-b">SubTitle</small>
+          <div>
+            <div className="content_image">
+              <img src={`https://loop-markets.directus.app/assets/${item.image.id}`} />
+            </div>
+            <p className="content">
+              <b>{item.author.first_name}:</b> {item.content}
+            </p>
           </div>
-        </div>
-        <div>
-          <div className="content_image">
-            <img src="https://via.placeholder.com/500" />
-          </div>
-          <p className="content">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque
-            placerat eros vitae nibh lacinia, quis rutrum ipsum vulputate. . . .
-            . .
-          </p>
-        </div>
+        </section>
       </section>
-      <section className="social_Feed">
-        <div className="user">
-          <div className="user_image">
-            <img
-              src="https://via.placeholder.com/50"
-              className="img-circle"
-            />
-          </div>
-          <div className="user_detail">
-            <div className="h4">John Doe</div>
-            <small className="text-muted m-b">SubTitle</small>
-          </div>
-        </div>
-        <div>
-          <img src="https://via.placeholder.com/500" />
-          <p className="content">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque
-            placerat eros vitae nibh lacinia, quis rutrum ipsum vulputate. . . .
-            . .
-          </p>
-        </div>
-      </section>
-    </section>
-  );
+    );
+  });
 }
