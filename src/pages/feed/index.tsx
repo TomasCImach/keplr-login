@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import * as api from "../../components/directus.api";
+const heart = "../../assets/icons/heart.svg";
+const comment = "../../assets/icons/comment.svg";
 
 export default function Feed() {
+  const navigate = useNavigate();
   const [feed, setFeed] = useState<any>();
 
   useEffect(() => {
@@ -10,33 +14,42 @@ export default function Feed() {
     }
   }, [feed]);
 
-  return feed?.map((item: any) => {
-    console.log(item)
-    return (
-      <section id="content">
-        <section className="social_Feed">
-          <div className="user">
-            <div className="user_image">
-              <img
-                src={`https://loop-markets.directus.app/assets/${item.author.avatar}`}
-                className="img-circle"
-              />
+  return (
+  <section id="content">
+    {feed?.map((item: any) => {
+      return (
+          <section className="social_Feed">
+            <div className="user">
+              <div className="user_image">
+                <img
+                  src={`https://loop-markets.directus.app/assets/${item.author.avatar}`}
+                  className="img-circle"
+                />
+              </div>
+              <div className="user_detail">
+                <div className="h4">{item.author.first_name}</div>
+                <small className="text-muted m-b">{item.author.title}</small>
+              </div>
             </div>
-            <div className="user_detail">
-              <div className="h4">{item.author.first_name}</div>
-              <small className="text-muted m-b">{item.author.title}</small>
+            <div>
+              <div className="content_image">
+                <img src={`https://loop-markets.directus.app/assets/${item.image.id}`} />
+              </div>
+              <p className="content">
+                <div className="actions">
+                  <img src={heart} />
+                  <img src={comment} onClick={() => {navigate(`/p/${item.id}`)}} />
+                </div>
+                <p
+                  onClick={() => {navigate(`/p/${item.id}`)}}
+                >
+                  <b>{item.author.first_name}:</b> {item.content}
+                </p>
+              </p>
             </div>
-          </div>
-          <div>
-            <div className="content_image">
-              <img src={`https://loop-markets.directus.app/assets/${item.image.id}`} />
-            </div>
-            <p className="content">
-              <b>{item.author.first_name}:</b> {item.content}
-            </p>
-          </div>
-        </section>
-      </section>
-    );
-  });
+          </section>
+      );
+    })}
+  </section>
+  );
 }

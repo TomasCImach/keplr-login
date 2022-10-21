@@ -1,3 +1,18 @@
+#content{
+    background: #fff;
+    height: 100vh;
+    .back_button {
+        padding: 20px;
+    }
+    .user_detail {
+        width: 100%;
+    }
+}
+
+.date_created {
+    font-size: 10px;
+    float: right;
+}
 .social_Feed {
     background: #fff;
     .user {
@@ -14,7 +29,7 @@
         .user_image {
             height: 50px !important;
             width: 50px !important;
-            overflow: hidden;
+            //overflow: hidden;
 
             display: block;
             background: #E6E7ED;
@@ -43,5 +58,17 @@
         font-size: 16px;
         padding: 20px;
         margin: 0;
+        color: #000;
+
+        .actions {
+            width: 20px;
+            height: 20px;
+
+            display: flex;
+            gap: 15px;
+
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
     }
 }

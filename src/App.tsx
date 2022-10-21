@@ -7,6 +7,7 @@ import Home from "./pages/home";
 import Error from "./pages/error";
 import Profile from "./pages/profile"
 import Feed from "./pages/feed";
+import DetailView from "./pages/feed/DetailView";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             <Routes>
               <Route path="/" index element={<Feed />} />
               <Route path="/feed" index element={<Feed />} />
+              <Route path="/p/:id" index element={<DetailView />} />
               <Route path="/profile" element={<Profile />} />
               
               {/* WILD CARD */}
