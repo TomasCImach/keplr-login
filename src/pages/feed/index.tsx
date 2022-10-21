@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
+import timeAgo from "../../helpers/timeago";
 import * as api from "../../components/directus.api";
 const heart = "../../assets/icons/heart.svg";
 const comment = "../../assets/icons/comment.svg";
@@ -27,7 +28,7 @@ export default function Feed() {
                 />
               </div>
               <div className="user_detail">
-                <div className="h4">{item.author.first_name}</div>
+                <div className="h4">{item.author.first_name} <small className="date_created">{timeAgo(item.date_created)}</small></div>
                 <small className="text-muted m-b">{item.author.title}</small>
               </div>
             </div>
